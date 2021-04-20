@@ -60,7 +60,7 @@ class Simulation:
         if self.time > self.max_years:
             return
         pandemic = self.pandemic_history.in_pandemic(time=self.time)
-        if pandemic is None:
+        if pandemic is not None:
             self.funding -= self.population.pandemic_pay()
             self.population.kill(kill_percent=pandemic.kill_percent)
             if self.funding <= 0:
@@ -84,5 +84,3 @@ class Simulation:
 
     def __str__(self):
         return "<Simulation | time = {}>".format(self.time)
-
-

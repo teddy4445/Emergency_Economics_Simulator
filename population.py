@@ -65,15 +65,15 @@ class Population:
 
     def kill(self,
              kill_percent: float):
-        random.sample(self.agents, int(len(self.agents) * (1 - kill_percent)))
+        self.agents = random.sample(self.agents, int(len(self.agents) * (1 - kill_percent)))
 
     def pandemic_pay(self):
         payment = 0
         for agent in self.agents:
             if agent.working_type == Agent.IMPORTENT_WORKER:
-                payment += 1
+                payment += 100
             else:
-                payment += 5
+                payment += 200
         return payment
 
     def distribution(self,
