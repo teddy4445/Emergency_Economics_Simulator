@@ -4,6 +4,10 @@ import random
 from agent import Agent
 
 
+BURN_RATE = 0.02
+IMPORTANT_EMPLOY_RATE = 0.5
+
+
 class Population:
     """
     Basically, a static list (may be changed later) of agents.
@@ -60,8 +64,8 @@ class Population:
     # logical functions #
 
     def burn(self):
-        self.agents.extend([Agent(working_type=Agent.IMPORTENT_WORKER, salary=100) for i in range(math.ceil(len(self.agents)*0.01))])
-        self.agents.extend([Agent(working_type=Agent.NON_IMPORTENT_WORKER, salary=100) for i in range(math.ceil(len(self.agents)*0.01))])
+        self.agents.extend([Agent(working_type=Agent.IMPORTENT_WORKER, salary=100) for i in range(math.ceil(len(self.agents)*BURN_RATE*IMPORTANT_EMPLOY_RATE))])
+        self.agents.extend([Agent(working_type=Agent.NON_IMPORTENT_WORKER, salary=100) for i in range(math.ceil(len(self.agents)*BURN_RATE*(1-IMPORTANT_EMPLOY_RATE)))])
 
     def kill(self,
              kill_percent: float):

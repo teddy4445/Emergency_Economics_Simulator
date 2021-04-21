@@ -29,8 +29,9 @@ class SimulatorRunner:
         """
 
         # distribution values
-        salary_values = [100, 200, 300]
-        salary_values_weights = [0.3, 0.4, 0.3]
+        #  TAKEN FROM: https://www.calcalist.co.il/local/articles/0,7340,L-3774607,00.html
+        salary_values = [4786, 7527, 9976, 12541, 14448, 16196, 19453, 22216, 25671, 40254]
+        salary_values_weights = [0.1 for i in range(len(salary_values))]
 
         pandemic_accurance = [5, 10, 15]
         pandemic_accurance_weights = [0.2, 0.3, 0.5]

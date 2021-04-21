@@ -41,7 +41,22 @@ class Agent:
     # getters #
 
     def pay(self):
-        return 0.1 * self.salary
+        # https://www.kolzchut.org.il/he/%D7%9E%D7%93%D7%A8%D7%92%D7%95%D7%AA_%D7%9E%D7%A1_%D7%94%D7%9B%D7%A0%D7%A1%D7%94
+        answer = 0
+        if 0 <= self.salary < 6290:
+            answer += 0.1 * self.salary
+        elif 6290 <= self.salary < 9030:
+            return 0.1 * 6290 + (self.salary - 6290) * 0.14
+        elif 9030 <= self.salary < 14490:
+            return 0.1 * 6290 + 0.14 * (9030 - 6290) + (self.salary - 9030) * 0.20
+        elif 14490 <= self.salary < 20140:
+            return 0.1 * 6290 + 0.14 * (9030 - 6290) + 0.20 * (14490 - 9030) + (self.salary - 14490) * 0.31
+        elif 20140 <= self.salary < 41910:
+            return 0.1 * 6290 + 0.14 * (9030 - 6290) + 0.20 * (14490 - 9030) + 0.31 * (20140 - 14490) + (self.salary - 20140) * 0.35
+        elif 41910 <= self.salary < 53970:
+            return 0.1 * 6290 + 0.14 * (9030 - 6290) + 0.20 * (14490 - 9030) + 0.31 * (20140 - 14490) + 0.35 * (41910 - 20140) + (self.salary - 41910) * 0.47
+        else:  # elif 53970 <= self.salary:
+            return 0.1 * 6290 + 0.14 * (9030 - 6290) + 0.20 * (14490 - 9030) + 0.31 * (20140 - 14490) + 0.35 * (41910 - 20140) + 0.47 * (53970 - 41910) + (self.salary - 53970) * 0.5
 
     # end - getters #
 
