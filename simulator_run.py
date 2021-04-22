@@ -3,12 +3,12 @@ import os
 import json
 import numpy
 import concurrent.futures
-from random import choices
+from random import choices, randint
 
 # project imports
 from agent import Agent
 from pandemic import Pandemic
-from population import Population
+from population import Population, salary_values_weights, salary_values
 from pandemic_history import PandemicHistory
 from simulator import Simulation
 
@@ -28,23 +28,24 @@ class SimulatorRunner:
         :return: saves results to the
         """
 
-        # distribution values
-        #  TAKEN FROM: https://www.calcalist.co.il/local/articles/0,7340,L-3774607,00.html
-        salary_values = [4786, 7527, 9976, 12541, 14448, 16196, 19453, 22216, 25671, 40254]
-        salary_values_weights = [0.1 for i in range(len(salary_values))]
+        pandemic_accurance = []
+        pandemic_accurance_weights = []
+        # other option
+        pandemic_accurance_mean = 10 # 33.33
+        pandemic_accurance_std = 5 # 57.49
 
-        pandemic_accurance = [5, 10, 15]
-        pandemic_accurance_weights = [0.2, 0.3, 0.5]
+        pandemic_duration = []
+        pandemic_duration_weights = []
+        # other option
+        pandemic_duration_mean = 3.28
+        pandemic_duration_std = 3.12
 
-        pandemic_duration = [1, 2, 3, 4, 5]
-        pandemic_duration_weights = [0.15, 0.25, 0.25, 0.2, 0.15]
-
-        pandemic_death_percent = [0.01, 0.02, 0.03]
-        pandemic_death_percent_weights = [0.8, 0.15, 0.05]
+        pandemic_death_percent = [0, 0.005, 0.01, 0.02, 0.03]
+        pandemic_death_percent_weights = [0.7, 0.18, 0.07, 0.035, 0.015]
 
         # global parameters
-        max_years = 80
-        repeat_count = 100
+        max_years = 100
+        repeat_count = 10
 
         # generate multiple simulation and store in the end the mean and std of each result
         simulations = []
@@ -54,11 +55,12 @@ class SimulatorRunner:
             important_workers_count = 100
             non_important_workers_count = 900
 
+            # the (0.9 + randint(0, 20)/100) is just to have a bit of change in the population
             agents = [Agent(working_type=Agent.IMPORTENT_WORKER,
-                            salary=choices(salary_values, salary_values_weights, k=1)[0])
+                            salary=choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20)/100))
                       for i in range(important_workers_count)]
             agents.extend([Agent(working_type=Agent.NON_IMPORTENT_WORKER,
-                                 salary=choices(salary_values, salary_values_weights, k=1)[0])
+                                 salary=choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20)/100))
                            for i in range(non_important_workers_count)])
 
             # generate pandemic
@@ -67,9 +69,17 @@ class SimulatorRunner:
 
             last_date = 0
             while last_date < max_years:
-                new_start_year = choices(pandemic_accurance, pandemic_accurance_weights, k=1)[0]
-                new_duration = choices(pandemic_duration, pandemic_duration_weights, k=1)[0]
+                #new_start_year = choices(pandemic_accurance, pandemic_accurance_weights, k=1)[0]
+                #new_duration = choices(pandemic_duration, pandemic_duration_weights, k=1)[0]
+                new_start_year = numpy.random.normal(numpy.mean(pandemic_accurance_mean), numpy.std(pandemic_accurance_std), 1)
+                new_duration = numpy.random.normal(numpy.mean(pandemic_duration_mean), numpy.std(pandemic_duration_std), 1)
                 new_kill_percent = choices(pandemic_death_percent, pandemic_death_percent_weights, k=1)[0]
+
+                # fixes
+                if new_start_year < 5:
+                    new_start_year = 1 + randint(0, round(pandemic_accurance_mean))
+                if new_duration < 1:
+                    new_duration = 1
 
                 new_pandemic = Pandemic(start_year=last_date + new_start_year,
                                         duration=new_duration,
@@ -81,7 +91,8 @@ class SimulatorRunner:
             # generate full simulation
             new_sim = Simulation(population=Population(agents=agents),
                                  pandemic_history=PandemicHistory(pandemics=pandemics),
-                                 max_years=max_years)
+                                 max_years=max_years,
+                                 index=i+1)
 
             simulations.append(new_sim)
 

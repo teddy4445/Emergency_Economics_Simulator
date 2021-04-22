@@ -12,7 +12,9 @@ class Simulation:
     def __init__(self,
                  population,
                  pandemic_history,
-                 max_years):
+                 max_years,
+                 index: int=0):
+        self.index = index
         self.population = population
         self.pandemic_history = pandemic_history
         self.time = 0
@@ -73,8 +75,12 @@ class Simulation:
         # count this time
         self.time += 1
 
+        # grow population
+        self.population.burn()
+        #
+
         # just for debug
-        print("Simulation at {} years ".format(self.time))
+        print("Simulation #{} at {} years ".format(self.index, self.time))
 
     def is_over(self):
         return self.time >= self.max_years

@@ -1,11 +1,20 @@
 import math
 import random
+from random import choices, randint
 
 from agent import Agent
 
-
+# https://mfa.gov.il/MFA/AboutIsrael/Spotlight/Pages/Israel-at-70-A-statistical-glimpse-15-April-2018.aspx  -  We take the yearly growth rate to be 2%
 BURN_RATE = 0.02
-IMPORTANT_EMPLOY_RATE = 0.5
+# an estimation of government workers and non-government workers
+IMPORTANT_EMPLOY_RATE = 0.2
+
+# policy we can play with
+NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC = 0.75
+
+#  TAKEN FROM: https://www.calcalist.co.il/local/articles/0,7340,L-3774607,00.html
+salary_values = [4786, 7527, 9976, 12541, 14448, 16196, 19453, 22216, 25671, 40254]
+salary_values_weights = [0.1 for i in range(len(salary_values))]
 
 
 class Population:
@@ -64,8 +73,16 @@ class Population:
     # logical functions #
 
     def burn(self):
-        self.agents.extend([Agent(working_type=Agent.IMPORTENT_WORKER, salary=100) for i in range(math.ceil(len(self.agents)*BURN_RATE*IMPORTANT_EMPLOY_RATE))])
-        self.agents.extend([Agent(working_type=Agent.NON_IMPORTENT_WORKER, salary=100) for i in range(math.ceil(len(self.agents)*BURN_RATE*(1-IMPORTANT_EMPLOY_RATE)))])
+        self.agents.extend([Agent(working_type=Agent.IMPORTENT_WORKER,
+                                  salary=choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20) / 100))
+                            for i in range(math.ceil(len(self.agents)*BURN_RATE*IMPORTANT_EMPLOY_RATE))])
+        self.agents.extend([Agent(working_type=Agent.NON_IMPORTENT_WORKER,
+                                  salary=choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20)/100))
+                            for i in range(math.ceil(len(self.agents)*BURN_RATE*(1-IMPORTANT_EMPLOY_RATE)))])
+
+    def change_payments(self):
+        for agent in self.agents:
+            pass
 
     def kill(self,
              kill_percent: float):
@@ -74,10 +91,8 @@ class Population:
     def pandemic_pay(self):
         payment = 0
         for agent in self.agents:
-            if agent.working_type == Agent.IMPORTENT_WORKER:
-                payment += 100
-            else:
-                payment += 200
+            if agent.working_type != Agent.IMPORTENT_WORKER:
+                payment += agent.salary * NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC
         return payment
 
     def distribution(self,
