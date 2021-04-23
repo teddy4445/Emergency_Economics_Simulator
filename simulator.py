@@ -13,7 +13,8 @@ class Simulation:
                  population,
                  pandemic_history,
                  max_years,
-                 index: int=0):
+                 index: int = 0,
+                 debug: bool = False):
         self.index = index
         self.population = population
         self.pandemic_history = pandemic_history
@@ -25,6 +26,8 @@ class Simulation:
 
         # target parameters
         self.years_pandemic_crisis = 0
+
+        self.debug = debug
 
     @staticmethod
     def build_from_json(json_obj):
@@ -64,13 +67,15 @@ class Simulation:
         pandemic = self.pandemic_history.in_pandemic(time=self.time)
         if pandemic is not None:
             self.funding -= self.population.pandemic_pay()
-            self.population.kill(kill_percent=pandemic.kill_percent)
-            if self.funding <= 0:
-                # update the target parameters
-                self.years_pandemic_crisis += 1
+            self.population.kill(kill_percent=pandemic.kill_percent / pandemic.duration)
         else:
             for agent in self.population:
                 self.funding += agent.pay()
+
+        # if crisis year
+        if self.funding <= 0:
+            # update the target parameters
+            self.years_pandemic_crisis += 1
 
         # count this time
         self.time += 1
@@ -80,7 +85,7 @@ class Simulation:
         #
 
         # just for debug
-        print("Simulation #{} at {} years ".format(self.index, self.time))
+        print("Simulation #{} at {} years (funding: {:.2f}, crisis: {})".format(self.index, self.time, self.funding, self.years_pandemic_crisis))
 
     def is_over(self):
         return self.time >= self.max_years

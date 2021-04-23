@@ -1,18 +1,9 @@
 {
   "simulation_duration": "100",
-  "simulation_samples": "10",
-  "crisis_years_mean:": "15.400",
-  "crisis_years_std:": "0.490",
+  "simulation_samples": "1",
+  "crisis_years_mean:": "74.000",
+  "crisis_years_std:": "-1.000",
   "crisis_years_data:": [
-    16,
-    16,
-    16,
-    15,
-    15,
-    16,
-    15,
-    15,
-    15,
-    15
+    74
   ]
 }

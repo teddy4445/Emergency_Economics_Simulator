@@ -10,11 +10,16 @@ BURN_RATE = 0.02
 IMPORTANT_EMPLOY_RATE = 0.2
 
 # policy we can play with
-NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC = 0.75
+NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC = 0.50
+NON_IMPORTANT_WORKER_PAYMENT_CHANCE = 0.05
 
 #  TAKEN FROM: https://www.calcalist.co.il/local/articles/0,7340,L-3774607,00.html
 salary_values = [4786, 7527, 9976, 12541, 14448, 16196, 19453, 22216, 25671, 40254]
 salary_values_weights = [0.1 for i in range(len(salary_values))]
+
+# age distrebution taken from: https://data.gov.il/dataset/residents_in_israel_by_communities_and_age_groups/resource/64edd0ee-3d5d-43ce-8562-c336c24dbc1f
+ages_values = [33, 50, 60]
+ages_values_weights = [0.65, 0.2, 0.15]
 
 
 class Population:
@@ -73,16 +78,24 @@ class Population:
     # logical functions #
 
     def burn(self):
+        # The number 18 as they enter just enter the working force with 5 years differ in the Israeli reality
         self.agents.extend([Agent(working_type=Agent.IMPORTENT_WORKER,
+                                  age=18 + randint(0, 5),
                                   salary=choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20) / 100))
                             for i in range(math.ceil(len(self.agents)*BURN_RATE*IMPORTANT_EMPLOY_RATE))])
         self.agents.extend([Agent(working_type=Agent.NON_IMPORTENT_WORKER,
+                                  age=18 + randint(0, 5),
                                   salary=choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20)/100))
                             for i in range(math.ceil(len(self.agents)*BURN_RATE*(1-IMPORTANT_EMPLOY_RATE)))])
 
     def change_payments(self):
+        # BASED ON: https://journals.sagepub.com/doi/pdf/10.1525/sop.2001.44.2.163
         for agent in self.agents:
-            pass
+            # on average, assuming 50% male and 50% female (0.054, 0.067)
+            agent.salary *= 0.0605
+            if agent.age > 65:
+                agent.age = 18 + randint(0, 5)
+                agent.salary = choices(salary_values, salary_values_weights, k=1)[0] * (0.9 + randint(0, 20)/100)
 
     def kill(self,
              kill_percent: float):
@@ -92,7 +105,10 @@ class Population:
         payment = 0
         for agent in self.agents:
             if agent.working_type != Agent.IMPORTENT_WORKER:
-                payment += agent.salary * NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC
+                if random.random() < NON_IMPORTANT_WORKER_PAYMENT_CHANCE:
+                    payment += agent.salary * NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC
+            else:
+                payment -= agent.pay()
         return payment
 
     def distribution(self,
