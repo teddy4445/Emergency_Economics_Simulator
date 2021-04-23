@@ -13,6 +13,7 @@ class Simulation:
                  population,
                  pandemic_history,
                  max_years,
+                 tax_rate: float = 0.01,
                  index: int = 0,
                  debug: bool = False):
         self.index = index
@@ -27,20 +28,25 @@ class Simulation:
         # target parameters
         self.years_pandemic_crisis = 0
 
+        # properties
+        self.tax_rate = tax_rate
+
         self.debug = debug
 
     @staticmethod
     def build_from_json(json_obj):
         answer = Simulation(population=Population.build_from_json(json_obj=json_obj["population"]),
                             pandemic_history=PandemicHistory.build_from_json(json_obj=json_obj["pandemic_history"]),
-                            max_years=json_obj["max_years"])
+                            max_years=json_obj["max_years"],
+                            tax_rate=json_obj["tax_rate"])
         return answer
 
     def to_json(self):
         return {
             "population": self.population.to_json(),
             "pandemic_history": self.pandemic_history.to_json(),
-            "max_years": self.max_years
+            "max_years": self.max_years,
+            "tax_rate": self.tax_rate
         }
 
     def clear(self):
@@ -66,11 +72,11 @@ class Simulation:
             return
         pandemic = self.pandemic_history.in_pandemic(time=self.time)
         if pandemic is not None:
-            self.funding -= self.population.pandemic_pay()
+            self.funding -= self.population.pandemic_pay(self.tax_rate)
             self.population.kill(kill_percent=pandemic.kill_percent / pandemic.duration)
         else:
             for agent in self.population:
-                self.funding += agent.pay()
+                self.funding += agent.pay(self.tax_rate)
 
         # if crisis year
         if self.funding <= 0:

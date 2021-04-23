@@ -10,7 +10,7 @@ from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression
 
 # project imports
-from agent import Agent, CRISIS_EVENT_TAX_RATE
+from agent import Agent
 from pandemic import Pandemic
 from population import Population, salary_values_weights, salary_values, ages_values, ages_values_weights
 from pandemic_history import PandemicHistory
@@ -38,11 +38,11 @@ class SimulatorRunner:
         for tax_rate in [0.005 * (i+1) for i in range(20)]:
             # prepare simulations
             simulations = SimulatorRunner.prepare_simulations(max_years=max_years,
-                                                              repeat_count=repeat_count)
+                                                              repeat_count=repeat_count,
+                                                              tax_rate=tax_rate)
 
             # compute results for each simulation
             answer = []
-            CRISIS_EVENT_TAX_RATE = tax_rate
             # run each one in process until they all finish
             with concurrent.futures.ThreadPoolExecutor(max_workers=SimulatorRunner.MAX_THREADS) as executor:
                 # Start the load operations and mark each future with its URL
@@ -59,7 +59,7 @@ class SimulatorRunner:
             std_answer = numpy.std(answer) if len(answer) > 2 else -1
             text_to_write += "{:.3f},{:.3f},{:.3f}\n".format(tax_rate, mean_answer, std_answer)
             answer_data.append([tax_rate, mean_answer, std_answer])
-            print("Finish loop for tax_rate = {:.3f}".format(tax_rate))
+            print("\n\n\n\n\nFinish loop for tax_rate = {:.3f}\n\n\n\n\n".format(tax_rate))
 
         # save results to the target file
         with open(target_path_csv, "w") as target_file:
@@ -144,7 +144,9 @@ class SimulatorRunner:
 
 
     @staticmethod
-    def prepare_simulations(max_years, repeat_count):
+    def prepare_simulations(max_years,
+                            repeat_count,
+                            tax_rate):
         pandemic_accurance = []
         pandemic_accurance_weights = []
         # other option
@@ -208,6 +210,7 @@ class SimulatorRunner:
                                  pandemic_history=PandemicHistory(pandemics=pandemics),
                                  max_years=max_years,
                                  index=i+1,
+                                 tax_rate=tax_rate,
                                  debug=True)
 
             simulations.append(new_sim)
@@ -223,5 +226,5 @@ class SimulatorRunner:
 
 if __name__ == '__main__':
     # SimulatorRunner.run(target_path=os.path.join(os.path.dirname(__file__), "results", "run_answer.json"))
-    SimulatorRunner.run_sensitivity_tax_rate(target_path_csv=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.json"),
+    SimulatorRunner.run_sensitivity_tax_rate(target_path_csv=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.csv"),
                                              target_path_png=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.png"))
