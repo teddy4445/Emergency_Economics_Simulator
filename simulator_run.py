@@ -94,7 +94,6 @@ class SimulatorRunner:
         fig.savefig(target_path_png)
         plt.close()
 
-
     @staticmethod
     def run(target_path: str):
         """
@@ -107,7 +106,8 @@ class SimulatorRunner:
         repeat_count = 50
         # prepare simulations
         simulations = SimulatorRunner.prepare_simulations(max_years=max_years,
-                                                          repeat_count=repeat_count)
+                                                          repeat_count=repeat_count,
+                                                          tax_rate=0.05)
 
         # compute results for each simulation
         answer = []
@@ -205,12 +205,17 @@ class SimulatorRunner:
                 # update the history time
                 last_date += new_start_year + new_duration
 
+            positive_money_rate = 0.03
+            negative_money_rate = 0.08
+
             # generate full simulation
             new_sim = Simulation(population=Population(agents=agents),
                                  pandemic_history=PandemicHistory(pandemics=pandemics),
                                  max_years=max_years,
                                  index=i+1,
                                  tax_rate=tax_rate,
+                                 positive_money_rate=positive_money_rate,
+                                 negative_money_rate=negative_money_rate,
                                  debug=True)
 
             simulations.append(new_sim)

@@ -13,6 +13,8 @@ class Simulation:
                  population,
                  pandemic_history,
                  max_years,
+                 positive_money_rate: float,
+                 negative_money_rate: float,
                  tax_rate: float = 0.01,
                  index: int = 0,
                  debug: bool = False):
@@ -30,6 +32,8 @@ class Simulation:
 
         # properties
         self.tax_rate = tax_rate
+        self.positive_money_rate = positive_money_rate
+        self.negative_money_rate = negative_money_rate
 
         self.debug = debug
 
@@ -82,13 +86,15 @@ class Simulation:
         if self.funding <= 0:
             # update the target parameters
             self.years_pandemic_crisis += 1
+            self.funding *= (1 + self.positive_money_rate)
+        else:
+            self.funding *= (1 + self.negative_money_rate)
 
         # count this time
         self.time += 1
 
         # grow population
         self.population.burn()
-        #
 
         # just for debug
         print("Simulation #{} at {} years (funding: {:.2f}, crisis: {})".format(self.index, self.time, self.funding, self.years_pandemic_crisis))
