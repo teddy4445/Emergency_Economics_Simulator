@@ -10,8 +10,7 @@ BURN_RATE = 0.02
 IMPORTANT_EMPLOY_RATE = 0.2
 
 # policy we can play with
-NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC = 0.50
-NON_IMPORTANT_WORKER_PAYMENT_CHANCE = 0.05
+NON_IMPORTANT_WORKER_PAYMENT_CHANCE = 0.1
 
 #  TAKEN FROM: https://www.calcalist.co.il/local/articles/0,7340,L-3774607,00.html
 salary_values = [4786, 7527, 9976, 12541, 14448, 16196, 19453, 22216, 25671, 40254]
@@ -102,12 +101,13 @@ class Population:
         self.agents = random.sample(self.agents, int(len(self.agents) * (1 - kill_percent)))
 
     def pandemic_pay(self,
-                     tax_rate: float):
+                     tax_rate: float,
+                     payment_policy: float):
         payment = 0
         for agent in self.agents:
             if agent.working_type != Agent.IMPORTENT_WORKER:
                 if random.random() < NON_IMPORTANT_WORKER_PAYMENT_CHANCE:
-                    payment += agent.salary * NON_IMPORTANT_WORKER_PERCENT_SALERY_DURING_PANDEMIC
+                    payment += agent.salary * payment_policy
             else:
                 payment -= agent.pay(tax_rate=tax_rate)
         return payment

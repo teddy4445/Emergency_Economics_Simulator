@@ -15,7 +15,8 @@ class Simulation:
                  max_years,
                  positive_money_rate: float,
                  negative_money_rate: float,
-                 tax_rate: float = 0.01,
+                 tax_rate: float = 0.025,
+                 payment_policy: float = 0.75,
                  index: int = 0,
                  debug: bool = False):
         self.index = index
@@ -31,18 +32,23 @@ class Simulation:
         self.years_pandemic_crisis = 0
 
         # properties
+        self.payment_policy = payment_policy
         self.tax_rate = tax_rate
         self.positive_money_rate = positive_money_rate
         self.negative_money_rate = negative_money_rate
 
         self.debug = debug
+        self.history = []
 
     @staticmethod
     def build_from_json(json_obj):
         answer = Simulation(population=Population.build_from_json(json_obj=json_obj["population"]),
                             pandemic_history=PandemicHistory.build_from_json(json_obj=json_obj["pandemic_history"]),
                             max_years=json_obj["max_years"],
-                            tax_rate=json_obj["tax_rate"])
+                            tax_rate=json_obj["tax_rate"],
+                            payment_policy=json_obj["payment_policy"],
+                            positive_money_rate=json_obj["positive_money_rate"],
+                            negative_money_rate=json_obj["negative_money_rate"])
         return answer
 
     def to_json(self):
@@ -50,7 +56,10 @@ class Simulation:
             "population": self.population.to_json(),
             "pandemic_history": self.pandemic_history.to_json(),
             "max_years": self.max_years,
-            "tax_rate": self.tax_rate
+            "tax_rate": self.tax_rate,
+            "payment_policy": self.payment_policy,
+            "positive_money_rate": self.positive_money_rate,
+            "negative_money_rate": self.negative_money_rate
         }
 
     def clear(self):
@@ -76,7 +85,8 @@ class Simulation:
             return
         pandemic = self.pandemic_history.in_pandemic(time=self.time)
         if pandemic is not None:
-            self.funding -= self.population.pandemic_pay(self.tax_rate)
+            self.funding -= self.population.pandemic_pay(tax_rate=self.tax_rate,
+                                                         payment_policy=self.payment_policy)
             self.population.kill(kill_percent=pandemic.kill_percent / pandemic.duration)
         else:
             for agent in self.population:
@@ -92,6 +102,7 @@ class Simulation:
 
         # count this time
         self.time += 1
+        self.history.append([self.time, self.years_pandemic_crisis, self.funding])
 
         # grow population
         self.population.burn()
