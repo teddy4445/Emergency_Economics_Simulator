@@ -152,7 +152,7 @@ class SimulatorRunner:
         # prepare simulations
         simulations = SimulatorRunner.prepare_simulations(max_years=max_years,
                                                           repeat_count=repeat_count,
-                                                          tax_rate=0.025,
+                                                          tax_rate=0.07,
                                                           payment_policy=0.75)
 
         # compute results for each simulation
@@ -222,6 +222,41 @@ class SimulatorRunner:
         fig.savefig(target_path.replace("json", "png"))
         plt.close()
 
+        # single plots
+
+        fig, ax1 = plt.subplots()
+        ax1.errorbar(ground_answer_time,
+                    ground_answer_crisis_years_mean,
+                    yerr=ground_answer_crisis_years_std,
+                    marker="o",
+                    markersize=3,
+                    color="r")
+        ax1.tick_params(axis='y')
+        ax1.set(xlabel='Tax rate [1]',
+                ylabel='Crisis years [1]')
+        plt.ylim((0, 100))
+        ax1.grid()
+        fig.tight_layout()
+        fig.savefig(target_path.replace(".json", "_crisis_run.png"))
+        plt.close()
+
+
+        fig, ax2 = plt.subplots()
+        ax2.errorbar(ground_answer_time,
+                    ground_answer_funding_years_mean,
+                    yerr=ground_answer_funding_years_std,
+                    marker="x",
+                    markersize=3,
+                    color="b")
+        ax2.tick_params(axis='y')
+        ax2.set(xlabel='Tax rate [1]',
+                ylabel='Funding in Israeli Shekels [1]')
+        ax1.grid()
+        plt.ylim((-100000000, 100000000))
+        fig.tight_layout()
+        fig.savefig(target_path.replace(".json", "_funding_run.png"))
+        plt.close()
+
     @staticmethod
     def prepare_simulations(max_years,
                             repeat_count,
@@ -270,6 +305,8 @@ class SimulatorRunner:
                 #new_duration = choices(pandemic_duration, pandemic_duration_weights, k=1)[0]
                 new_start_year = round(numpy.random.normal(pandemic_accurance_mean, pandemic_accurance_std, 1)[0])
                 new_duration = round(numpy.random.normal(pandemic_duration_mean, pandemic_duration_std, 1)[0])
+                ###new_start_year = round(numpy.random.normal(pandemic_accurance_mean, 0, 1)[0])
+                ###new_duration = round(numpy.random.normal(pandemic_duration_mean, 0, 1)[0])
                 new_kill_percent = choices(pandemic_death_percent, pandemic_death_percent_weights, k=1)[0]
 
                 # fixes
@@ -312,5 +349,4 @@ class SimulatorRunner:
 
 if __name__ == '__main__':
     SimulatorRunner.run(target_path=os.path.join(os.path.dirname(__file__), "results", "run_answer.json"))
-    SimulatorRunner.run_sensitivity(target_path_csv=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.csv"),
-                                    target_path_png=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.png"))
+    # SimulatorRunner.run_sensitivity(target_path_csv=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.csv"),       target_path_png=os.path.join(os.path.dirname(__file__), "results", "run_sensitivity_tax_rate.png"))
