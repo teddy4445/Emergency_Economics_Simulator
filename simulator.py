@@ -1,7 +1,8 @@
 import math
+import random
 
 from pandemic_history import PandemicHistory
-from population import Population
+from population import Population, Agent
 
 
 class Simulation:
@@ -18,7 +19,8 @@ class Simulation:
                  tax_rate: float = 0.025,
                  payment_policy: float = 0.75,
                  index: int = 0,
-                 debug: bool = False):
+                 debug: bool = False,
+                 training_cost_rate: float = 0.01):
         self.index = index
         self.population = population
         self.pandemic_history = pandemic_history
@@ -30,12 +32,15 @@ class Simulation:
 
         # target parameters
         self.years_pandemic_crisis = 0
+        self.outcome = 0
 
         # properties
         self.payment_policy = payment_policy
         self.tax_rate = tax_rate
         self.positive_money_rate = positive_money_rate
         self.negative_money_rate = negative_money_rate
+
+        self.training_cost_rate = training_cost_rate
 
         self.debug = debug
         self.history = []
@@ -85,12 +90,17 @@ class Simulation:
             return
         pandemic = self.pandemic_history.in_pandemic(time=self.time)
         if pandemic is not None:
-            self.funding -= self.population.pandemic_pay(tax_rate=self.tax_rate,
-                                                         payment_policy=self.payment_policy)
+            payment, outcome = self.population.pandemic_pay(tax_rate=self.tax_rate, payment_policy=self.payment_policy)
+            self.funding -= payment
+            self.outcome += outcome
             self.population.kill(kill_percent=pandemic.kill_percent / pandemic.duration)
         else:
             for agent in self.population:
                 self.funding += agent.pay(self.tax_rate)
+                if agent.working_type == Agent.NON_IMPORTENT_WORKER and random.random() < self.training_cost_rate:
+                    self.funding -= agent.salary * self.payment_policy
+                else:
+                    self.outcome += agent.salary
 
         # if crisis year
         if self.funding <= 0:
@@ -102,13 +112,13 @@ class Simulation:
 
         # count this time
         self.time += 1
-        self.history.append([self.time, self.years_pandemic_crisis, self.funding])
+        self.history.append([self.time, self.years_pandemic_crisis, self.funding, self.outcome])
 
         # grow population
         self.population.burn()
 
         # just for debug
-        print("Simulation #{} at {} years (funding: {:.2f}, crisis: {})".format(self.index, self.time, self.funding, self.years_pandemic_crisis))
+        #print("Simulation #{} at {} years (funding: {:.2f}, crisis: {}, outcome: {})".format(self.index, self.time, self.funding, self.years_pandemic_crisis, self.outcome))
 
     def is_over(self):
         return self.time >= self.max_years
